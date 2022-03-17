@@ -13,6 +13,7 @@ TESLA_KERNEL_PATH=${WORK_TESLA_PATH}/linux
 TESLA_OUTPUT_PATH=${WORK_TESLA_PATH}/output
 TESLA_BBL_PATH=${WORK_TESLA_PATH}/opensbi
 TESLA_CROSS_COMPILE=gcc
+TESLA_GNU_TOOLS_REPO_PATH=${WORK_TESLA_PATH}/riscv-gnu-toolchain
 
 #BBL_PATH=${WORK_QEMU_PATH}riscv-pk/
 
@@ -22,9 +23,22 @@ if [ ! -d output ] ; then
         mkdir output
 fi
 #prepare toolchains
-if [ ! -d ${WORK_TESLA_PATH}/output/riscv64-gnu-toolchain-self-compiler ] ; then
-        tar -xzvf ${WORK_TESLA_PATH}/tools/riscv64-gnu-toolchain-self-compiler.tar.gz -C ${WORK_TESLA_PATH}/output
+if [ ! -d ${WORK_TESLA_PATH}/output/riscv64-gnu-toolchain-compiler ] ; then
+     #   tar -xzvf ${WORK_TESLA_PATH}/tools/riscv64-gnu-toolchain-self-compiler.tar.gz -C ${WORK_TESLA_PATH}/output
+     GNU_TOOLS_INSTALL_PATH=${WORK_TESLA_PATH}/output/riscv64-gnu-toolchain-compiler
+     mkdir ${GNU_TOOLS_INSTALL_PATH}
+     cd ${TESLA_GNU_TOOLS_REPO_PATH}
+     ./configure --prefix=${GNU_TOOLS_INSTALL_PATH}
+     make linux
+     if [ $? -eq 0 ];then
+	     echo "compiler is ok"
+     else
+	     echo "compiler is fail"
+	     rm ${GNU_TOOLS_INSTALL_PATH} -f
+     fi
 fi
+
+exit 0
 
 TESLA_CROSS_COMPILE=${WORK_TESLA_PATH}/output/riscv64-gnu-toolchain-self-compiler/bin/riscv64-unknown-linux-gnu-
 if [ ! -f ${TESLA_CROSS_COMPILE}gcc ]; then
