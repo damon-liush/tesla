@@ -15,6 +15,7 @@ WORK_KERNEL_PATH=${WORK_TOP_PATH}/linux
 WORK_OUTPUT_PATH=${WORK_TOP_PATH}/output
 WORK_SBI_PATH=${WORK_TOP_PATH}/opensbi
 WORK_ROOTFS_PATH=${WORK_TOP_PATH}/buildroot
+WORK_QEMU_PATH=${WORK_TOP_PATH}/qemu
 WORK_GNU_TOOLS_REPO_PATH=${WORK_TOP_PATH}/riscv-gnu-toolchain
 WORK_CROSS_COMPILE=riscv64-unknown-linux-gnu-
 GNU_TOOLS_INSTALL_PATH=/opt/riscv64
@@ -74,8 +75,8 @@ mklinux(){
         	exit 1
 	fi
 
-	#cp ${WORK_KERNEL_PATH}/arch/riscv/boot/Image ${WORK_OUTPUT_PATH}
-	#cp ${WORK_KERNEL_PATH}/vmlinux ${WORK_OUTPUT_PATH}
+	cp ${WORK_KERNEL_PATH}/arch/riscv/boot/Image ${WORK_OUTPUT_PATH}
+	cp ${WORK_KERNEL_PATH}/vmlinux ${WORK_OUTPUT_PATH}
 }
 
 mksbi(){
@@ -87,7 +88,21 @@ mksbi(){
 		echo "fw_jump.bin not exist, opensbi compile failed."
 		exit 1
 	fi
-	#cp ${WORK_SBI_PATH}/build/platform/generic/firmware/fw_jump.bin ${WORK_OUTPUT_PATH}
+	cp ${WORK_SBI_PATH}/build/platform/generic/firmware/fw_jump.bin ${WORK_OUTPUT_PATH}
+	cp ${WORK_SBI_PATH}/build/platform/generic/firmware/fw_jump.elf ${WORK_OUTPUT_PATH}
+}
+
+mkqemu(){
+	cd ${WORK_QEMU_PATH}
+	mkdir build
+	cd build
+	../configure --target-list=riscv64-softmmu,riscv64-linux-user --prefix=/opt/qemu
+	make -j2
+	make install
+}
+
+packout(){
+	echo "todo..."
 }
 
 #create output dir and link files
@@ -100,6 +115,9 @@ fi
 case $1 in
     "all")
         echo "build kernel sbi rootfs ..."
+	mklinux
+	mksbi
+	mkrootfs
         ;;
     "kernel")
         echo "build kernel ..."
@@ -115,6 +133,7 @@ case $1 in
         ;;
     "qemu")
         echo "build qemu ..."
+	mkqemu
         ;;
     "tools")
         echo "build gnu tools ..."
@@ -122,6 +141,7 @@ case $1 in
         ;;
     "pack")
         echo "pack linux opensbi rootfs to output ..."
+	packout
         ;;
     *)
     echo "Your cmd is error!"
